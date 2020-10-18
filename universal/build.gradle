@@ -1,0 +1,146 @@
+plugins {
+    id 'kotlin'
+    id 'jacoco'
+    id 'java-library'
+    id 'com.github.dcendents.android-maven'
+    id 'com.jfrog.bintray'
+}
+
+
+java {
+    sourceCompatibility JavaVersion.VERSION_1_8
+    targetCompatibility JavaVersion.VERSION_1_8
+}
+kotlin {
+    compileKotlin.kotlinOptions.jvmTarget = "1.8"
+    compileTestKotlin.kotlinOptions.jvmTarget = "1.8"
+}
+
+
+dependencies {
+    implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
+    testImplementation 'junit:junit:4.13.1'
+}
+
+ext {
+    bintrayRepo = 'Kotlin-Extensions' // your repo name
+    bintrayName = 'universal' // has to be same as your library module name
+    publishedGroupId = 'com.github.alexdochioiu' // your module package name
+    libraryName = 'Kotlin-Extensions'
+    artifact = 'universal' // has to be same as your library module name
+    libraryDescription = 'TODO'
+    siteUrl = 'https://github.com/AlexDochioiu/Kotlin-Extensions'
+    issuesUrl = 'https://github.com/AlexDochioiu/Kotlin-Extensions/issues'
+    gitUrl = 'https://github.com/AlexDochioiu/Kotlin-Extensions.git'
+    libLabels = ['Android', 'JeeFo', 'AlexDochioiu', "Kotlin", "Java", "Kotlin", "Extensions", "Android", "universal"]
+    libraryVersion = "1.0.0"
+    developerId = 'jeefo'
+    developerName = 'AlexDochioiu'
+    developerEmail = 'alex@dochioiu.com'
+    licenseName = 'The Apache Software License, Version 2.0'
+    licenseUrl = 'http://www.apache.org/licenses/LICENSE-2.0.txt'
+    allLicenses = ["Apache-2.0"]
+}
+
+group = publishedGroupId   // Maven Group ID for the artifact
+
+install {
+    repositories.mavenInstaller {
+        // This generates POM.xml with proper parameters
+        pom {
+            project {
+                packaging 'aar'
+                groupId publishedGroupId
+                artifactId artifact
+
+                // Add your description here
+                name libraryName
+                description libraryDescription
+                url siteUrl
+
+                // Set your license
+                licenses {
+                    license {
+                        name licenseName
+                        url licenseUrl
+                    }
+                }
+                developers {
+                    developer {
+                        id developerId
+                        name developerName
+                        email developerEmail
+                    }
+                }
+                scm {
+                    connection gitUrl
+                    developerConnection gitUrl
+                    url siteUrl
+
+                }
+            }
+        }
+    }
+}
+
+jacocoTestReport {
+    reports {
+        xml.enabled true
+        csv.enabled false
+        html.enabled false
+        //xml.destination file("${buildDir}/jacocoCoverage")
+    }
+}
+
+version = libraryVersion
+
+task sourcesJarProcessor(type: Jar) {
+    from sourceSets.main.java.srcDirs
+    classifier = 'sources'
+}
+
+task javadocProcessor(type: Javadoc) {
+    source = sourceSets.main.java.srcDirs
+    classpath = sourceSets.main.runtimeClasspath
+    //classpath += project.files(android.getBootClasspath().join(File.pathSeparator))
+}
+
+task javadocJarProcessor(type: Jar, dependsOn: javadoc) {
+    classifier = 'javadoc'
+    from javadoc.destinationDir
+}
+artifacts {
+    archives javadocJarProcessor
+    archives sourcesJarProcessor
+}
+
+// Bintray
+Properties properties = new Properties()
+properties.load(project.rootProject.file('local.properties').newDataInputStream())
+
+bintray {
+    user = properties.getProperty("bintray.user")
+    key = properties.getProperty("bintray.apikey")
+
+    configurations = ['archives']
+    pkg {
+        repo = bintrayRepo
+        name = bintrayName
+        desc = libraryDescription
+        websiteUrl = siteUrl
+        vcsUrl = gitUrl
+        labels = libLabels
+        issueTrackerUrl = issuesUrl
+        licenses = allLicenses
+        publish = true
+        publicDownloadNumbers = true
+        version {
+            desc = libraryDescription
+            gpg {
+                sign = true //Determines whether to GPG sign the files. The default is false
+                passphrase = properties.getProperty("bintray.gpg.password")
+                //Optional. The passphrase for GPG signing'
+            }
+        }
+    }
+}
