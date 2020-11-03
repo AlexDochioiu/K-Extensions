@@ -14,7 +14,7 @@ import org.junit.runner.RunWith
  */
 @Suppress("ClassName")
 @RunWith(Enclosed::class)
-class AtomicExtensionsTest {
+class AtomicReferenceTest {
 
     @RunWith(Enclosed::class)
     class Nullable {
